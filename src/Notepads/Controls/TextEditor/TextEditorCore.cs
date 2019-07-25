@@ -1,12 +1,12 @@
 ﻿
 namespace Notepads.Controls.TextEditor
 {
-    using Notepads.Commands;
-    using Notepads.Services;
-    using Notepads.Utilities;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using Notepads.Commands;
+    using Notepads.Services;
+    using Notepads.Utilities;
     using Windows.ApplicationModel.DataTransfer;
     using Windows.System;
     using Windows.UI.Core;
@@ -118,10 +118,17 @@ namespace Notepads.Controls.TextEditor
 
         public string GetText()
         {
-            Document.GetText(TextGetOptions.None, out var text);
-            // RichEditBox's Document.GetText() method by default append an extra '\r' at end of the text string
-            // We need to trim it before proceeding
-            return TrimRichEditBoxText(text);
+            if (ThreadUtility.IsOnUIThread())
+            {
+                Document.GetText(TextGetOptions.None, out var text);
+                // RichEditBox's Document.GetText() method by default append an extra '\r' at end of the text string
+                // We need to trim it before proceeding
+                return TrimRichEditBoxText(text);
+            }
+            else
+            {
+                return string.Join('\r', _documentLinesCache);
+            }
         }
 
         //TODO This method I wrote is pathetic, need to find a way to implement it in a better way 

@@ -28,9 +28,9 @@ namespace Notepads.Core
 
         event KeyEventHandler OnTextEditorKeyDown;
 
-        void OpenNewTextEditor();
+        TextEditor OpenNewTextEditor(Guid? id = null);
 
-        Task OpenNewTextEditor(StorageFile file);
+        Task<TextEditor> OpenNewTextEditor(StorageFile file, Guid? id = null, bool isBackupFile = false);
 
         Task SaveTextEditorContentToFile(TextEditor textEditor, StorageFile file);
 

@@ -1,14 +1,14 @@
 ﻿
 namespace Notepads.Controls.TextEditor
 {
-    using Notepads.Commands;
-    using Notepads.Extensions;
-    using Notepads.Services;
-    using Notepads.Utilities;
     using System;
     using System.Collections.Generic;
     using System.Text;
     using System.Threading.Tasks;
+    using Notepads.Commands;
+    using Notepads.Extensions;
+    using Notepads.Services;
+    using Notepads.Utilities;
     using Windows.Foundation;
     using Windows.Storage;
     using Windows.System;
@@ -19,6 +19,8 @@ namespace Notepads.Controls.TextEditor
 
     public sealed partial class TextEditor : Page
     {
+        public Guid Id { get; set; }
+
         public FileType FileType { get; private set; }
 
         private StorageFile _editingFile;
@@ -33,7 +35,7 @@ namespace Notepads.Controls.TextEditor
             }
         }
 
-        public Encoding Encoding { get; set; }
+        public Encoding Encoding { get; set; } = new UTF8Encoding(false);
 
         public LineEnding LineEnding { get; set; }
 
@@ -141,13 +143,16 @@ namespace Notepads.Controls.TextEditor
 
         public async Task SaveToFile(StorageFile file)
         {
-            Encoding encoding = Encoding ?? new UTF8Encoding(false);
+            await SaveToFileOnly(file);
+            EditingFile = file;
+            Saved = true;
+        }
+
+        public async Task SaveToFileOnly(StorageFile file)
+        {
             var text = TextEditorCore.GetText();
             text = LineEndingUtility.ApplyLineEnding(text, LineEnding);
-            await FileSystemUtility.WriteToFile(text, encoding, file);
-            EditingFile = file;
-            Encoding = encoding;
-            Saved = true;
+            await FileSystemUtility.WriteToFile(text, Encoding, file);
         }
 
         public string GetContentForSharing()

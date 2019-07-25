@@ -1,16 +1,18 @@
 ﻿
 namespace Notepads.Utilities
 {
-    using Microsoft.AppCenter.Analytics;
-    using Notepads.Services;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using Microsoft.AppCenter.Analytics;
+    using Notepads.Services;
     using Windows.ApplicationModel.Resources;
     using Windows.Storage;
+    using Windows.Storage.AccessCache;
+    using Windows.Storage.FileProperties;
     using Windows.Storage.Provider;
 
     public class TextFile
@@ -64,16 +66,7 @@ namespace Notepads.Utilities
                 return null;
             }
 
-            try
-            {
-                return await StorageFile.GetFileFromPathAsync(path);
-            }
-            catch (Exception)
-            {
-                // ignore
-            }
-
-            return null;
+            return await GetFile(path);
         }
 
         public static string GetAbsolutePathFromCommondLine(string dir, string args)
@@ -123,6 +116,30 @@ namespace Notepads.Utilities
             catch (Exception)
             {
                 return false;
+            }
+        }
+
+        public static async Task<StorageFile> GetFile(string filePath)
+        {
+            try
+            {
+                return await StorageFile.GetFileFromPathAsync(filePath);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static async Task<StorageFile> GetFileFromFutureAccessList(string token)
+        {
+            try
+            {
+                return await StorageApplicationPermissions.FutureAccessList.GetFileAsync(token);
+            }
+            catch
+            {
+                return null;
             }
         }
 
@@ -238,6 +255,12 @@ namespace Notepads.Utilities
                     throw new Exception($"FileUpdateStatus: {nameof(status)}");
                 }
             }
+        }
+
+        public static async Task<DateTimeOffset> GetDateModified(StorageFile file)
+        {
+            BasicProperties basicProperties = await file.GetBasicPropertiesAsync();
+            return basicProperties.DateModified;
         }
     }
 }
